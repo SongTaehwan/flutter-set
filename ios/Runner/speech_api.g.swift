@@ -29,6 +29,10 @@ private func wrapError(_ error: Any) -> [Any?] {
   ]
 }
 
+private func createConnectionError(withChannelName channelName: String) -> FlutterError {
+  return FlutterError(code: "channel-error", message: "Unable to establish connection on channel: '\(channelName)'.", details: "")
+}
+
 private func isNullish(_ value: Any?) -> Bool {
   return value is NSNull || value == nil
 }
@@ -38,96 +42,74 @@ private func nilOrValue<T>(_ value: Any?) -> T? {
   return value as! T?
 }
 
-/// Generated class from Pigeon that represents data sent in messages.
-struct SpeechText {
-  var text: String
-
-  static func fromList(_ list: [Any?]) -> SpeechText? {
-    let text = list[0] as! String
-
-    return SpeechText(
-      text: text
-    )
-  }
-  func toList() -> [Any?] {
-    return [
-      text,
-    ]
-  }
-}
-private class SpeechApiCodecReader: FlutterStandardReader {
-  override func readValue(ofType type: UInt8) -> Any? {
-    switch type {
-      case 128:
-        return SpeechText.fromList(self.readValue() as! [Any?])
-      default:
-        return super.readValue(ofType: type)
-    }
-  }
-}
-
-private class SpeechApiCodecWriter: FlutterStandardWriter {
-  override func writeValue(_ value: Any) {
-    if let value = value as? SpeechText {
-      super.writeByte(128)
-      super.writeValue(value.toList())
-    } else {
-      super.writeValue(value)
-    }
-  }
-}
-
-private class SpeechApiCodecReaderWriter: FlutterStandardReaderWriter {
-  override func reader(with data: Data) -> FlutterStandardReader {
-    return SpeechApiCodecReader(data: data)
-  }
-
-  override func writer(with data: NSMutableData) -> FlutterStandardWriter {
-    return SpeechApiCodecWriter(data: data)
-  }
-}
-
-class SpeechApiCodec: FlutterStandardMessageCodec {
-  static let shared = SpeechApiCodec(readerWriter: SpeechApiCodecReaderWriter())
-}
-
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
-protocol SpeechApi {
-  func startRecord() throws -> SpeechText
-  func stopRecord() throws
+protocol SpeechHostApi {
+  func startRecording(completion: @escaping (Result<Void, Error>) -> Void)
+  func stopRecording(completion: @escaping (Result<Void, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
-class SpeechApiSetup {
-  /// The codec used by SpeechApi.
-  static var codec: FlutterStandardMessageCodec { SpeechApiCodec.shared }
-  /// Sets up an instance of `SpeechApi` to handle messages through the `binaryMessenger`.
-  static func setUp(binaryMessenger: FlutterBinaryMessenger, api: SpeechApi?) {
-    let startRecordChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.speech_app.SpeechApi.startRecord", binaryMessenger: binaryMessenger, codec: codec)
+class SpeechHostApiSetup {
+  /// The codec used by SpeechHostApi.
+  /// Sets up an instance of `SpeechHostApi` to handle messages through the `binaryMessenger`.
+  static func setUp(binaryMessenger: FlutterBinaryMessenger, api: SpeechHostApi?) {
+    let startRecordingChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.speech_app.SpeechHostApi.startRecording", binaryMessenger: binaryMessenger)
     if let api = api {
-      startRecordChannel.setMessageHandler { _, reply in
-        do {
-          let result = try api.startRecord()
-          reply(wrapResult(result))
-        } catch {
-          reply(wrapError(error))
+      startRecordingChannel.setMessageHandler { _, reply in
+        api.startRecording() { result in
+          switch result {
+            case .success:
+              reply(wrapResult(nil))
+            case .failure(let error):
+              reply(wrapError(error))
+          }
         }
       }
     } else {
-      startRecordChannel.setMessageHandler(nil)
+      startRecordingChannel.setMessageHandler(nil)
     }
-    let stopRecordChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.speech_app.SpeechApi.stopRecord", binaryMessenger: binaryMessenger, codec: codec)
+    let stopRecordingChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.speech_app.SpeechHostApi.stopRecording", binaryMessenger: binaryMessenger)
     if let api = api {
-      stopRecordChannel.setMessageHandler { _, reply in
-        do {
-          try api.stopRecord()
-          reply(wrapResult(nil))
-        } catch {
-          reply(wrapError(error))
+      stopRecordingChannel.setMessageHandler { _, reply in
+        api.stopRecording() { result in
+          switch result {
+            case .success:
+              reply(wrapResult(nil))
+            case .failure(let error):
+              reply(wrapError(error))
+          }
         }
       }
     } else {
-      stopRecordChannel.setMessageHandler(nil)
+      stopRecordingChannel.setMessageHandler(nil)
+    }
+  }
+}
+/// Generated protocol from Pigeon that represents Flutter messages that can be called from Swift.
+protocol SpeechFlutterApiProtocol {
+  func sendSpeechText(text textArg: String, completion: @escaping (Result<Void, FlutterError>) -> Void)
+}
+class SpeechFlutterApi: SpeechFlutterApiProtocol {
+  private let binaryMessenger: FlutterBinaryMessenger
+  init(binaryMessenger: FlutterBinaryMessenger){
+    self.binaryMessenger = binaryMessenger
+  }
+  func sendSpeechText(text textArg: String, completion: @escaping (Result<Void, FlutterError>) -> Void) {
+    let channelName: String = "dev.flutter.pigeon.speech_app.SpeechFlutterApi.sendSpeechText"
+    let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger)
+    channel.sendMessage([textArg] as [Any?]) { response in
+      guard let listResponse = response as? [Any?] else {
+        completion(.failure(createConnectionError(withChannelName:channelName)))
+        return
+      }
+      if (listResponse.count > 1) {
+        let code: String = listResponse[0] as! String
+        let message: String? = nilOrValue(listResponse[1])
+        let details: String? = nilOrValue(listResponse[2])
+        completion(.failure(FlutterError(code: code, message: message, details: details)));
+      } else {
+        completion(.success(Void()))
+      }
     }
   }
 }

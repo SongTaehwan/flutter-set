@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:speech_app/speech_api.g.dart';
+
+import 'speech_view_model.dart';
 
 void main() {
   runApp(const MyApp());
@@ -7,22 +11,49 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(),
+      home: ChangeNotifierProvider(
+        create: (_) {
+          final viewModel = SpeechViewModel();
+          // 채널 등록
+          SpeechFlutterApi.setup(viewModel);
+          return viewModel;
+        },
+        builder: (context, child) {
+          final viewModel = context.watch<SpeechViewModel>();
+          return MyHomePage(
+            viewModel: viewModel,
+          );
+        },
+      ),
     );
   }
 }
 
 class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
+  final SpeechViewModel viewModel;
+
+  const MyHomePage({
+    super.key,
+    required this.viewModel,
+  });
+
+  handleOnTapMic() {
+    if (viewModel.isRecording) {
+      viewModel.stopRecording();
+      return;
+    }
+
+    viewModel.startRecording();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,21 +65,19 @@ class MyHomePage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
             Text(
-              'asfasdfasdf',
+              viewModel.text,
               style: Theme.of(context).textTheme.headlineMedium,
             ),
           ],
         ),
       ),
-      floatingActionButton: const FloatingActionButton(
-        onPressed: null,
-        tooltip: 'Increment',
-        child: Icon(Icons.mic),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      floatingActionButton: FloatingActionButton(
+        onPressed: handleOnTapMic,
+        child: Icon(
+          viewModel.isRecording ? Icons.mic_off : Icons.mic,
+        ),
+      ),
     );
   }
 }

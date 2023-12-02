@@ -15,89 +15,28 @@ PlatformException _createConnectionError(String channelName) {
   );
 }
 
-class SpeechText {
-  SpeechText({
-    required this.text,
-  });
-
-  String text;
-
-  Object encode() {
-    return <Object?>[
-      text,
-    ];
+List<Object?> wrapResponse({Object? result, PlatformException? error, bool empty = false}) {
+  if (empty) {
+    return <Object?>[];
   }
-
-  static SpeechText decode(Object result) {
-    result as List<Object?>;
-    return SpeechText(
-      text: result[0]! as String,
-    );
+  if (error == null) {
+    return <Object?>[result];
   }
+  return <Object?>[error.code, error.message, error.details];
 }
 
-class _SpeechApiCodec extends StandardMessageCodec {
-  const _SpeechApiCodec();
-  @override
-  void writeValue(WriteBuffer buffer, Object? value) {
-    if (value is SpeechText) {
-      buffer.putUint8(128);
-      writeValue(buffer, value.encode());
-    } else {
-      super.writeValue(buffer, value);
-    }
-  }
-
-  @override
-  Object? readValueOfType(int type, ReadBuffer buffer) {
-    switch (type) {
-      case 128: 
-        return SpeechText.decode(readValue(buffer)!);
-      default:
-        return super.readValueOfType(type, buffer);
-    }
-  }
-}
-
-class SpeechApi {
-  /// Constructor for [SpeechApi].  The [binaryMessenger] named argument is
+class SpeechHostApi {
+  /// Constructor for [SpeechHostApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  SpeechApi({BinaryMessenger? binaryMessenger})
+  SpeechHostApi({BinaryMessenger? binaryMessenger})
       : __pigeon_binaryMessenger = binaryMessenger;
   final BinaryMessenger? __pigeon_binaryMessenger;
 
-  static const MessageCodec<Object?> pigeonChannelCodec = _SpeechApiCodec();
+  static const MessageCodec<Object?> pigeonChannelCodec = StandardMessageCodec();
 
-  Future<SpeechText> startRecord() async {
-    const String __pigeon_channelName = 'dev.flutter.pigeon.speech_app.SpeechApi.startRecord';
-    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
-      __pigeon_channelName,
-      pigeonChannelCodec,
-      binaryMessenger: __pigeon_binaryMessenger,
-    );
-    final List<Object?>? __pigeon_replyList =
-        await __pigeon_channel.send(null) as List<Object?>?;
-    if (__pigeon_replyList == null) {
-      throw _createConnectionError(__pigeon_channelName);
-    } else if (__pigeon_replyList.length > 1) {
-      throw PlatformException(
-        code: __pigeon_replyList[0]! as String,
-        message: __pigeon_replyList[1] as String?,
-        details: __pigeon_replyList[2],
-      );
-    } else if (__pigeon_replyList[0] == null) {
-      throw PlatformException(
-        code: 'null-error',
-        message: 'Host platform returned null value for non-null return value.',
-      );
-    } else {
-      return (__pigeon_replyList[0] as SpeechText?)!;
-    }
-  }
-
-  Future<void> stopRecord() async {
-    const String __pigeon_channelName = 'dev.flutter.pigeon.speech_app.SpeechApi.stopRecord';
+  Future<void> startRecording() async {
+    const String __pigeon_channelName = 'dev.flutter.pigeon.speech_app.SpeechHostApi.startRecording';
     final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
       __pigeon_channelName,
       pigeonChannelCodec,
@@ -115,6 +54,62 @@ class SpeechApi {
       );
     } else {
       return;
+    }
+  }
+
+  Future<void> stopRecording() async {
+    const String __pigeon_channelName = 'dev.flutter.pigeon.speech_app.SpeechHostApi.stopRecording';
+    final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+      __pigeon_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: __pigeon_binaryMessenger,
+    );
+    final List<Object?>? __pigeon_replyList =
+        await __pigeon_channel.send(null) as List<Object?>?;
+    if (__pigeon_replyList == null) {
+      throw _createConnectionError(__pigeon_channelName);
+    } else if (__pigeon_replyList.length > 1) {
+      throw PlatformException(
+        code: __pigeon_replyList[0]! as String,
+        message: __pigeon_replyList[1] as String?,
+        details: __pigeon_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+}
+
+abstract class SpeechFlutterApi {
+  static const MessageCodec<Object?> pigeonChannelCodec = StandardMessageCodec();
+
+  void sendSpeechText(String text);
+
+  static void setup(SpeechFlutterApi? api, {BinaryMessenger? binaryMessenger}) {
+    {
+      final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.speech_app.SpeechFlutterApi.sendSpeechText', pigeonChannelCodec,
+          binaryMessenger: binaryMessenger);
+      if (api == null) {
+        __pigeon_channel.setMessageHandler(null);
+      } else {
+        __pigeon_channel.setMessageHandler((Object? message) async {
+          assert(message != null,
+          'Argument for dev.flutter.pigeon.speech_app.SpeechFlutterApi.sendSpeechText was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final String? arg_text = (args[0] as String?);
+          assert(arg_text != null,
+              'Argument for dev.flutter.pigeon.speech_app.SpeechFlutterApi.sendSpeechText was null, expected non-null String.');
+          try {
+            api.sendSpeechText(arg_text!);
+            return wrapResponse(empty: true);
+          } on PlatformException catch (e) {
+            return wrapResponse(error: e);
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          }
+        });
+      }
     }
   }
 }

@@ -30,6 +30,9 @@ private fun wrapError(exception: Throwable): List<Any?> {
   }
 }
 
+private fun createConnectionError(channelName: String): FlutterError {
+  return FlutterError("channel-error",  "Unable to establish connection on channel: '$channelName'.", "")}
+
 /**
  * Error class for passing custom error details to Flutter via a thrown PlatformException.
  * @property code The error code.
@@ -42,93 +45,78 @@ class FlutterError (
   val details: Any? = null
 ) : Throwable()
 
-/** Generated class from Pigeon that represents data sent in messages. */
-data class SpeechText (
-  val text: String
-
-) {
-  companion object {
-    @Suppress("UNCHECKED_CAST")
-    fun fromList(list: List<Any?>): SpeechText {
-      val text = list[0] as String
-      return SpeechText(text)
-    }
-  }
-  fun toList(): List<Any?> {
-    return listOf<Any?>(
-      text,
-    )
-  }
-}
-@Suppress("UNCHECKED_CAST")
-private object SpeechApiCodec : StandardMessageCodec() {
-  override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
-    return when (type) {
-      128.toByte() -> {
-        return (readValue(buffer) as? List<Any?>)?.let {
-          SpeechText.fromList(it)
-        }
-      }
-      else -> super.readValueOfType(type, buffer)
-    }
-  }
-  override fun writeValue(stream: ByteArrayOutputStream, value: Any?)   {
-    when (value) {
-      is SpeechText -> {
-        stream.write(128)
-        writeValue(stream, value.toList())
-      }
-      else -> super.writeValue(stream, value)
-    }
-  }
-}
-
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
-interface SpeechApi {
-  fun startRecord(): SpeechText
-  fun stopRecord()
+interface SpeechHostApi {
+  fun startRecording(callback: (Result<Unit>) -> Unit)
+  fun stopRecording(callback: (Result<Unit>) -> Unit)
 
   companion object {
-    /** The codec used by SpeechApi. */
+    /** The codec used by SpeechHostApi. */
     val codec: MessageCodec<Any?> by lazy {
-      SpeechApiCodec
+      StandardMessageCodec()
     }
-    /** Sets up an instance of `SpeechApi` to handle messages through the `binaryMessenger`. */
+    /** Sets up an instance of `SpeechHostApi` to handle messages through the `binaryMessenger`. */
     @Suppress("UNCHECKED_CAST")
-    fun setUp(binaryMessenger: BinaryMessenger, api: SpeechApi?) {
+    fun setUp(binaryMessenger: BinaryMessenger, api: SpeechHostApi?) {
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.speech_app.SpeechApi.startRecord", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.speech_app.SpeechHostApi.startRecording", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
-            var wrapped: List<Any?>
-            try {
-              wrapped = listOf<Any?>(api.startRecord())
-            } catch (exception: Throwable) {
-              wrapped = wrapError(exception)
+            api.startRecording() { result: Result<Unit> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                reply.reply(wrapResult(null))
+              }
             }
-            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.speech_app.SpeechApi.stopRecord", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.speech_app.SpeechHostApi.stopRecording", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
-            var wrapped: List<Any?>
-            try {
-              api.stopRecord()
-              wrapped = listOf<Any?>(null)
-            } catch (exception: Throwable) {
-              wrapped = wrapError(exception)
+            api.stopRecording() { result: Result<Unit> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                reply.reply(wrapResult(null))
+              }
             }
-            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)
         }
       }
+    }
+  }
+}
+/** Generated class from Pigeon that represents Flutter messages that can be called from Kotlin. */
+@Suppress("UNCHECKED_CAST")
+class SpeechFlutterApi(private val binaryMessenger: BinaryMessenger) {
+  companion object {
+    /** The codec used by SpeechFlutterApi. */
+    val codec: MessageCodec<Any?> by lazy {
+      StandardMessageCodec()
+    }
+  }
+  fun sendSpeechText(textArg: String, callback: (Result<Unit>) -> Unit) {
+    val channelName = "dev.flutter.pigeon.speech_app.SpeechFlutterApi.sendSpeechText"
+    val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
+    channel.send(listOf(textArg)) {
+      if (it is List<*>) {
+        if (it.size > 1) {
+          callback(Result.failure(FlutterError(it[0] as String, it[1] as String, it[2] as String?)))
+        } else {
+          callback(Result.success(Unit))
+        }
+      } else {
+        callback(Result.failure(createConnectionError(channelName)))
+      } 
     }
   }
 }

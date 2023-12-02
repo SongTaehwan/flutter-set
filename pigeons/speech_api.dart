@@ -15,9 +15,18 @@ class SpeechText {
   SpeechText(this.text);
 }
 
-// 네이티브에서 정의할 API
+// Flutter -> Native
 @HostApi()
-abstract class SpeechApi {
-  SpeechText startRecord();
-  void stopRecord();
+abstract class SpeechHostApi {
+  @async
+  void startRecording();
+
+  @async
+  void stopRecording();
+}
+
+// Native -> Flutter
+@FlutterApi()
+abstract class SpeechFlutterApi {
+  void sendSpeechText(String text);
 }
