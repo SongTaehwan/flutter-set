@@ -10,16 +10,11 @@ import 'package:pigeon/pigeon.dart';
     swiftOptions: SwiftOptions(),
   ),
 )
-class SpeechText {
-  final String text;
-  SpeechText(this.text);
-}
-
 // Flutter -> Native
 @HostApi()
 abstract class SpeechHostApi {
   @async
-  void startRecording();
+  void startRecording(String language);
 
   @async
   void stopRecording();

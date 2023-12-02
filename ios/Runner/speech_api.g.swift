@@ -44,7 +44,7 @@ private func nilOrValue<T>(_ value: Any?) -> T? {
 
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol SpeechHostApi {
-  func startRecording(completion: @escaping (Result<Void, Error>) -> Void)
+  func startRecording(language: String, completion: @escaping (Result<Void, Error>) -> Void)
   func stopRecording(completion: @escaping (Result<Void, Error>) -> Void)
 }
 
@@ -55,8 +55,10 @@ class SpeechHostApiSetup {
   static func setUp(binaryMessenger: FlutterBinaryMessenger, api: SpeechHostApi?) {
     let startRecordingChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.speech_app.SpeechHostApi.startRecording", binaryMessenger: binaryMessenger)
     if let api = api {
-      startRecordingChannel.setMessageHandler { _, reply in
-        api.startRecording() { result in
+      startRecordingChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let languageArg = args[0] as! String
+        api.startRecording(language: languageArg) { result in
           switch result {
             case .success:
               reply(wrapResult(nil))

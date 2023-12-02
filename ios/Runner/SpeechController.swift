@@ -11,7 +11,7 @@ import Speech
 class SpeechController: SpeechHostApi {
 	private let audioEngine = AVAudioEngine()
 	private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
-	private var speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "ko_KR"))
+	private var speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
 	private var recognitionTask: SFSpeechRecognitionTask?
 
 	private let speechFlutterApi: SpeechFlutterApi
@@ -20,11 +20,13 @@ class SpeechController: SpeechHostApi {
 		self.speechFlutterApi = api
 	}
 
-	func startRecording(completion: @escaping (Result<Void, Error>) -> Void) {
+	func startRecording(language: String, completion: @escaping (Result<Void, Error>) -> Void) {
 		guard audioEngine.isRunning == false else {
 			completion(.failure(SpeechError.alreadyRecording))
 			return
 		}
+
+		self.speechRecognizer = nil
 
 		do {
 			recognitionTask?.cancel()
@@ -36,6 +38,7 @@ class SpeechController: SpeechHostApi {
 
 			let inputNode = audioEngine.inputNode
 			inputNode.removeTap(onBus: 0)
+
 			let recordingFormat = inputNode.outputFormat(forBus: 0)
 			inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { (buffer: AVAudioPCMBuffer, when: AVAudioTime) in
 				self.recognitionRequest?.append(buffer)
@@ -48,6 +51,8 @@ class SpeechController: SpeechHostApi {
 			guard let recognitionRequest = recognitionRequest else { fatalError("Unable to create a SFSpeechAudioBufferRecognitionRequest object") }
 			recognitionRequest.shouldReportPartialResults = true
 
+			self.speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: language))
+
 			if #available(iOS 13, *) {
 				speechRecognizer?.supportsOnDeviceRecognition = true
 
@@ -56,11 +61,11 @@ class SpeechController: SpeechHostApi {
 					print("iOS: Enable On Device Mode")
 				}
 			} else {
+				recognitionRequest.requiresOnDeviceRecognition = true
 				print("iOS: Network Mode")
 			}
 
 			recognitionTask = speechRecognizer?.recognitionTask(with: recognitionRequest) { result, error in
-				print("RESULT")
 				if let result = result {
 					DispatchQueue.main.async {
 						let transcribedString = result.bestTranscription.formattedString
@@ -77,6 +82,7 @@ class SpeechController: SpeechHostApi {
 				}
 
 				if error != nil {
+					// 말 하지 않는 상태에서 stopRecording 호출하면 에러 발생 =>  확인 필요
 					print("ERROR: \(error)")
 					self.audioEngine.stop()
 					inputNode.removeTap(onBus: 0)
@@ -84,6 +90,8 @@ class SpeechController: SpeechHostApi {
 					self.recognitionTask = nil
 				}
 			}
+
+			completion(.success(Void()))
 		} catch {
 			completion(.failure(error))
 		}
@@ -96,6 +104,11 @@ class SpeechController: SpeechHostApi {
 
 		recognitionRequest?.endAudio()
 		audioEngine.stop()
+		audioEngine.inputNode.removeTap(onBus: 0)
+		// TOOD: 아래 줄이 의미있을지 모르겠음 =>  확인 필요
+		self.recognitionRequest = nil
+		self.recognitionTask?.cancel()
+		self.recognitionTask = nil
 		completion(.success(()))
 	}
 

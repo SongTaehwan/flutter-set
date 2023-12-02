@@ -47,7 +47,7 @@ class FlutterError (
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface SpeechHostApi {
-  fun startRecording(callback: (Result<Unit>) -> Unit)
+  fun startRecording(language: String, callback: (Result<Unit>) -> Unit)
   fun stopRecording(callback: (Result<Unit>) -> Unit)
 
   companion object {
@@ -61,8 +61,10 @@ interface SpeechHostApi {
       run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.speech_app.SpeechHostApi.startRecording", codec)
         if (api != null) {
-          channel.setMessageHandler { _, reply ->
-            api.startRecording() { result: Result<Unit> ->
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val languageArg = args[0] as String
+            api.startRecording(languageArg) { result: Result<Unit> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(wrapError(error))

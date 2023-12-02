@@ -35,7 +35,7 @@ class SpeechHostApi {
 
   static const MessageCodec<Object?> pigeonChannelCodec = StandardMessageCodec();
 
-  Future<void> startRecording() async {
+  Future<void> startRecording(String language) async {
     const String __pigeon_channelName = 'dev.flutter.pigeon.speech_app.SpeechHostApi.startRecording';
     final BasicMessageChannel<Object?> __pigeon_channel = BasicMessageChannel<Object?>(
       __pigeon_channelName,
@@ -43,7 +43,7 @@ class SpeechHostApi {
       binaryMessenger: __pigeon_binaryMessenger,
     );
     final List<Object?>? __pigeon_replyList =
-        await __pigeon_channel.send(null) as List<Object?>?;
+        await __pigeon_channel.send(<Object?>[language]) as List<Object?>?;
     if (__pigeon_replyList == null) {
       throw _createConnectionError(__pigeon_channelName);
     } else if (__pigeon_replyList.length > 1) {

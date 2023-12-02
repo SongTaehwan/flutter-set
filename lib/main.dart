@@ -14,7 +14,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
@@ -28,6 +27,7 @@ class MyApp extends StatelessWidget {
           return viewModel;
         },
         builder: (context, child) {
+          // Dependency Injection
           final viewModel = context.watch<SpeechViewModel>();
           return MyHomePage(
             viewModel: viewModel,
@@ -69,6 +69,18 @@ class MyHomePage extends StatelessWidget {
               viewModel.text,
               style: Theme.of(context).textTheme.headlineMedium,
             ),
+            ElevatedButton(
+              onPressed: () {
+                if (viewModel.language == Language.english) {
+                  viewModel.setLanguage(Language.korean);
+                } else {
+                  viewModel.setLanguage(Language.english);
+                }
+              },
+              child: Text(
+                viewModel.language == Language.korean ? "영어로 변경" : "한국어로 변경",
+              ),
+            )
           ],
         ),
       ),
