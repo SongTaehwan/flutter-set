@@ -14,6 +14,7 @@ class SpeechController: SpeechHostApi {
 	private var speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
 	private var recognitionTask: SFSpeechRecognitionTask?
 
+	// From Swift to Flutter
 	private let speechFlutterApi: SpeechFlutterApi
 
 	init(api: SpeechFlutterApi) {

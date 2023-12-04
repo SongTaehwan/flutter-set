@@ -8,18 +8,26 @@ import Flutter
 		didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
 	) -> Bool {
 		let controller = window?.rootViewController as! FlutterViewController
-		configurePigeonSetup(binaryMessenger: controller.binaryMessenger)
+
+		configureSTTMethodChannel(binaryMessenger: controller.binaryMessenger)
+		configureTTSMethodChannel(binaryMessenger: controller.binaryMessenger)
+
 		GeneratedPluginRegistrant.register(with: self)
 		return super.application(application, didFinishLaunchingWithOptions: launchOptions)
 	}
 }
 
-// Flutter -> Native
+// From Flutter to Swift
 extension AppDelegate {
-	private func configurePigeonSetup(binaryMessenger: FlutterBinaryMessenger) {
+	private func configureSTTMethodChannel(binaryMessenger: FlutterBinaryMessenger) {
 		let flutterApi = SpeechFlutterApi(binaryMessenger: binaryMessenger)
 		let controller = SpeechController(api: flutterApi)
 		SpeechHostApiSetup.setUp(binaryMessenger: binaryMessenger, api: controller)
+	}
+
+	private func configureTTSMethodChannel(binaryMessenger: FlutterBinaryMessenger) {
+		let controller = TextToSpeechController()
+		TextToSpeechHostApiSetup.setUp(binaryMessenger: binaryMessenger, api: controller)
 	}
 }
 

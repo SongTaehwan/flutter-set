@@ -16,6 +16,8 @@
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
 		E49B7B292B1B5683001EA5D4 /* speech_api.g.swift in Sources */ = {isa = PBXBuildFile; fileRef = E49B7B282B1B5682001EA5D4 /* speech_api.g.swift */; };
 		E49B7B2B2B1B6289001EA5D4 /* SpeechController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E49B7B2A2B1B6289001EA5D4 /* SpeechController.swift */; };
+		E4B0228D2B1E02CA001A0576 /* TexToSpeechController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4B0228C2B1E02CA001A0576 /* TexToSpeechController.swift */; };
+		E4B0228F2B1E0323001A0576 /* text_to_speech_api.g.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4B0228E2B1E0322001A0576 /* text_to_speech_api.g.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,6 +61,8 @@
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E49B7B282B1B5682001EA5D4 /* speech_api.g.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = speech_api.g.swift; sourceTree = "<group>"; };
 		E49B7B2A2B1B6289001EA5D4 /* SpeechController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechController.swift; sourceTree = "<group>"; };
+		E4B0228C2B1E02CA001A0576 /* TexToSpeechController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TexToSpeechController.swift; sourceTree = "<group>"; };
+		E4B0228E2B1E0322001A0576 /* text_to_speech_api.g.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = text_to_speech_api.g.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -121,7 +125,9 @@
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				E49B7B2A2B1B6289001EA5D4 /* SpeechController.swift */,
+				E4B0228C2B1E02CA001A0576 /* TexToSpeechController.swift */,
 				E49B7B282B1B5682001EA5D4 /* speech_api.g.swift */,
+				E4B0228E2B1E0322001A0576 /* text_to_speech_api.g.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 			);
 			path = Runner;
@@ -277,7 +283,9 @@
 				E49B7B292B1B5683001EA5D4 /* speech_api.g.swift in Sources */,
 				E49B7B2B2B1B6289001EA5D4 /* SpeechController.swift in Sources */,
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
+				E4B0228F2B1E0323001A0576 /* text_to_speech_api.g.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
+				E4B0228D2B1E02CA001A0576 /* TexToSpeechController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
